@@ -227,3 +227,6 @@
   - import_tasks: tasks/virtual_desktop.yml
     when: (virtual_desktop_enabled | default(False))
     tags: virtual_desktop
+  - import_tasks: tasks/wikijs.yml
+    when: (wikijs_enabled | default(False))
+    tags: wikijs

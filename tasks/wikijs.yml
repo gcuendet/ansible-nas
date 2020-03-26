@@ -1,0 +1,44 @@
+---
+- name: Create Wiki.js Directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ wikijs_data_directory }}/postgresql/data"
+
+- name: wikijs_postgresql
+  docker_container:
+    name: wikijs_postgresql
+    image: postgres:9-alpine
+    env:
+      POSTGRES_DB: wiki
+      POSTGRES_PASSWORD: wikijsrocks
+      POSTGRES_USER: wikijs
+    volumes:
+      - "{{ wikijs_data_directory }}/postgresql/data:/var/lib/postgresql/data:rw"
+
+- name: Wiki.js
+  docker_container:
+    name: wikijs
+    image: requarks/wiki:beta
+    pull: true
+    links:
+      - wikijs_postgresql:db
+    volumes:
+      - "{{ wikijs_backup_directory }}:/backup:rw"
+    env:
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: wikijs
+      DB_PASS: wikijsrocks
+      DB_NAME: wiki
+    ports:
+      - "3002:3000" # <-- here you can replace with "80:3000" to listen on port 80 instead, as an example
+    restart_policy: unless-stopped
+    memory: 1g
+    labels:
+      traefik.backend: "wikijs"
+      traefik.frontend.rule: "Host:wikijs.{{ ansible_nas_domain }}"
+      traefik.enable: "{{ wikijs_available_externally }}"
+      traefik.port: "3002"
