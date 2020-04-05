@@ -55,3 +55,21 @@
       traefik.frontend.rule: "Host:firefly.{{ ansible_nas_domain }}"
       traefik.enable: "{{ firefly_available_externally }}"
       traefik.port: "80"
+
+- name: Get Firefly IP
+  shell: "docker inspect -f '{''{ .NetworkSettings.IPAddress}''}' firefly"
+  register: firefly_ip_address
+  delegate_to: 127.0.0.1
+  run_once: true
+
+- name: Create Firefly III csv importer container
+  docker_container:
+    name: firefly_csv_importer
+    image: fireflyiii/csv-importer:develop
+    pull: true
+    ports:
+      - "{{ firefly_csv_importer_port }}:80"
+    env:
+      FIREFLY_III_ACCESS_TOKEN: "{{ firefly_csv_access_token }}"
+      FIREFLY_III_URI: "{{ firefly_ip_address.stdout }}"
+    restart_policy: unless-stopped

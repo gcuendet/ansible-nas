@@ -730,6 +730,8 @@ bitwarden_allow_signups: false
 firefly_available_externally: "false"
 firefly_data_directory: "{{ docker_home }}/firefly"
 firefly_port: "8066"
+firefly_csv_importer_port: "8067"
+firefly_csv_access_token: ""
 
 ###
 ### Nzbget
@@ -833,3 +835,4 @@ vd_rdp_port: 3389
 ###
 wikijs_available_externally: "false"
 wikijs_data_directory: "{{ docker_home }}/wikijs"
+wikijs_backup_directory: "{{ docker_home }}/wikijs/backup"
