@@ -20,7 +20,7 @@
 - name: Wiki.js
   docker_container:
     name: wikijs
-    image: requarks/wiki:beta
+    image: requarks/wiki
     pull: true
     links:
       - wikijs_postgresql:db
