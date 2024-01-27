@@ -1,0 +1,3 @@
+[submodule "inventories/ansible-nas-config"]
+	path = inventories/ansible-nas-config
+	url = git@github.com:gcuendet/ansible-nas-config.git
