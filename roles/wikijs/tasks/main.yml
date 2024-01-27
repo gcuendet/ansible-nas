@@ -1,0 +1,70 @@
+---
+- name: Start Wiki.js
+  block:
+    - name: Create Wiki.js Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ wikijs_data_directory }}/postgresql/data"
+
+    - name: Create Wiki.js network
+      community.docker.docker_network:
+        name: "{{ wikijs_network_name }}"
+
+    - name: Wiki.js postgresql Docker Container
+      community.docker.docker_container:
+        name: "{{ wikijs_postgresql_container_name }}"
+        image: postgres:latest
+        pull: true
+        volumes:
+          - "{{ wikijs_data_directory }}/postgresql/data_16:/var/lib/postgresql/data:rw"
+        env:
+          POSTGRES_DB: "{{ wikijs_postgresql_database }}"
+          POSTGRES_PASSWORD: "{{ wikijs_postgresql_password }}"
+          POSTGRES_USER: "{{ wikijs_postgresql_user }}"
+        networks:
+        - name: "{{ wikijs_network_name }}"
+        network_mode: "{{ wikijs_network_name }}"
+
+    - name: Wiki.js Docker Container
+      community.docker.docker_container:
+        name: "{{ wikijs_container_name }}"
+        image: requarks/wiki:2
+        pull: true
+        networks:
+        - name: "{{ wikijs_network_name }}"
+        network_mode: "{{ wikijs_network_name }}"
+        env:
+          DB_TYPE: "postgres"
+          DB_HOST: "{{ wikijs_postgresql_container_name }}"
+          DB_PORT: "5432"
+          DB_USER: "{{ wikijs_postgresql_user }}"
+          DB_PASS: "{{ wikijs_postgresql_password }}"
+          DB_NAME: "{{ wikijs_postgresql_database }}"
+        volumes:
+          - "{{ wikijs_backup_directory }}:/backup:rw"
+        ports:
+          - "{{ wikijs_port }}:3000"
+        restart_policy: unless-stopped
+        memory: "{{ wikijs_memory }}"
+        labels:
+          traefik.enable: "{{ wikijs_available_externally | string }}"
+          traefik.http.routers.hello_world.rule: "Host(`{{ wikijs_hostname }}.{{ ansible_nas_domain }}`)"
+          traefik.http.routers.hello_world.tls.certresolver: "letsencrypt"
+          traefik.http.routers.hello_world.tls.domains[0].main: "{{ ansible_nas_domain }}"
+          traefik.http.routers.hello_world.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
+          traefik.http.services.hello_world.loadbalancer.server.port: "3000"
+  when: wikijs_enabled is true
+
+- name: Stop Hello World
+  block:
+    - name: Stop Wiki.js
+      community.docker.docker_container:
+        name: "{{ wikijs_container_name }}"
+        state: absent
+    - name: Stop Wiki.js postgresql
+      community.docker.docker_container:
+        name: "{{ wikijs_postgresql_container_name }}"
+        state: absent
+  when: wikijs_enabled is false

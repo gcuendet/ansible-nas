@@ -1,0 +1,22 @@
+---
+wikijs_enabled: false
+wikijs_available_externally: false
+
+# directories
+wikijs_data_directory: "{{ docker_home }}/wikijs"
+wikijs_backup_directory: "/pool3x2T_raidz1/wikijs-content"
+
+# network
+wikijs_port: "3002"
+wikijs_hostname: "wikijs"
+
+# specs
+wikijs_memory: 1g
+wikijs_network_name: wikijs_network
+wikijs_postgresql_database: wiki
+wikijs_postgresql_password: wikijsrocks
+wikijs_postgresql_user: wikijs
+
+# docker
+wikijs_container_name: wikijs
+wikijs_postgresql_container_name: wikijs_postgresql
