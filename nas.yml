@@ -426,6 +426,10 @@
       tags:
         - watchtower
 
+    - role: wikijs
+      tags:
+        - wikijs
+
     - role: wireshark
       tags:
         - wireshark
