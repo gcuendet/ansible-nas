@@ -28,6 +28,8 @@
           TZ: "{{ transmission_timezone }}"
           PUID: "{{ transmission_user_id }}"
           PGID: "{{ transmission_group_id }}"
+          USER: "{{ transmission_username }}"
+          PASS: "{{ transmission_password }}"
         restart_policy: unless-stopped
         memory: "{{ transmission_memory }}"
         labels:
