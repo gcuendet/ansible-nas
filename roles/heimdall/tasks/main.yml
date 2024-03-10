@@ -5,8 +5,6 @@
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        owner: heimdall
-        group: heimdall
       with_items:
         - "{{ heimdall_data_directory }}"
 
