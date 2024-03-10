@@ -10,6 +10,8 @@ transmission_watch_directory: "{{ torrents_root }}"
 # uid / gid
 transmission_user_id: "0"
 transmission_group_id: "0"
+transmission_username: "admin"
+transmission_password: "admin"
 
 # network
 transmission_webui_port: "9092"
