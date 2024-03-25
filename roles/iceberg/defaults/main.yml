@@ -1,0 +1,22 @@
+---
+iceberg_enabled: false
+iceberg_available_externally: false
+
+# directories
+iceberg_config_directory: "{{ docker_home }}/iceberg/config"
+
+# uid / gid
+iceberg_user_id: "0"
+iceberg_group_id: "0"
+
+# network
+iceberg_hostname: "iceberg"
+iceberg_port: "3000"
+
+# docker
+iceberg_container_name: "iceberg"
+iceberg_image_name: "spoked/iceberg"
+iceberg_image_version: "latest"
+
+# specs
+iceberg_memory: "1g"

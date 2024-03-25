@@ -1,0 +1,49 @@
+---
+- name: Start Iceberg
+  block:
+    - name: Create Iceberg Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ iceberg_config_directory }}"
+
+    - name: Create Iceberg Docker Container
+      community.docker.docker_container:
+        name: "{{ iceberg_container_name }}"
+        image: "{{ iceberg_image_name }}:{{ iceberg_image_version }}"
+        pull: true
+        network_mode: "host"
+        volumes:
+          - "{{ iceberg_config_directory }}:/iceberg/data:rw"
+          - "{{ realdebrid_docker_volume_name }}:/mnt/realdebrid:rw"
+            # ports:
+            # - "{{ iceberg_port }}:3003"
+        env:
+          TZ: "{{ ansible_nas_timezone }}"
+          PUID: "{{ iceberg_user_id }}"
+          PGID: "{{ iceberg_group_id }}"
+          ORIGIN: "http://{{ iceberg_hostname }}.{{ ansible_nas_domain }}"
+        restart_policy: unless-stopped
+        memory: "{{ iceberg_memory }}"
+        labels:
+          traefik.enable: "{{ iceberg_available_externally | string }}"
+          traefik.http.routers.iceberg.rule: "Host(`{{ iceberg_hostname }}.{{ ansible_nas_domain }}`)"
+          traefik.http.routers.iceberg.tls.certresolver: "letsencrypt"
+          traefik.http.routers.iceberg.tls.domains[0].main: "{{ ansible_nas_domain }}"
+          traefik.http.routers.iceberg.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
+          traefik.http.services.iceberg.loadbalancer.server.port: "3000"
+          homepage.group: "Media"
+          homepage.name: "Iceberg"
+          homepage.icon: "iceberg"
+          homepage.href: "http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:{{ iceberg_port }}"
+          homepage.description: "Plex Debrid Rewrite"
+  when: iceberg_enabled is true
+
+- name: Stop Iceberg
+  block:
+    - name: Stop Iceberg
+      community.docker.docker_container:
+        name: "{{ iceberg_container_name }}"
+        state: absent
+  when: iceberg_enabled is false

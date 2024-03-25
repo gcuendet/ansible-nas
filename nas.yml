@@ -186,6 +186,10 @@
       tags:
         - homepage
 
+    - role: iceberg
+      tags:
+        - iceberg
+
     - role: jackett
       tags:
         - jackett
@@ -337,6 +341,10 @@
     - role: radarr
       tags:
         - radarr
+
+    - role: rclone
+      tags:
+        - rclone
 
     - role: romm
       tags:

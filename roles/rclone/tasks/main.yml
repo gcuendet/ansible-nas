@@ -1,0 +1,42 @@
+- name: Start RClone
+  block:
+    - name: Create RClone Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ rclone_config_directory }}"
+        - "{{ rclone_cache_directory }}"
+
+    - name: Install RClone Docker Plugin
+      community.docker.docker_plugin:
+        plugin_name: "{{ rclone_docker_plugin }}:{{ rclone_docker_plugin_tag }}"
+        state: enable
+        alias: rclone
+        plugin_options:
+          config: "{{ rclone_config_directory }}"
+          cache: "{{ rclone_cache_directory }}"
+      
+    - name: Create RealDebrid Docker Volume 
+      community.docker.docker_volume:
+        name: "{{ realdebrid_docker_volume_name }}"
+        driver: rclone
+        driver_options:
+          type: "realdebrid"
+          realdebrid-api_key: "{{ realdebrid_api_key }}"
+          allow-other: "true"
+          dir-cache-time: "10s"
+  when: rclone_enabled is true
+
+- name: Stop RClone
+  block:
+    - name: Uninstall RClone Docker Plugin
+      community.docker.docker_plugin:
+        plugin_name: "{{ rclone_docker_plugin }}:{{ rclone_docker_plugin_tag}}"
+        state: absent
+
+    - name: Stop RealDebrid
+      docker_volume:
+        name: "{{ realdebrid_docker_volume_name }}"
+        state: absent
+  when: plex_debrid_enabled is false

@@ -1,0 +1,10 @@
+# directories
+rclone_config_directory: "{{ docker_home }}/rclone/config"
+rclone_cache_directory: "{{ docker_home }}/rclone/cache"
+
+# RClone
+rclone_docker_plugin: "itstoggle/docker-volume-rclone_rd"
+rclone_docker_plugin_tag: "amd64"
+
+realdebrid_docker_volume_name: "realdebrid"
+realdebrid_api_key: "APIKEY"
