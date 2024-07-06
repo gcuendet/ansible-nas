@@ -13,17 +13,18 @@
 
     - name: Template Cloudflare Dynamic DNS config.yml with scoped token
       ansible.builtin.template:
-        src: config.yml
-        dest: "{{ cloudflare_data_directory }}/config.yml"
+        src: config.json
+        dest: "{{ cloudflare_data_directory }}/config.json"
       register: template_files_result
 
     - name: Cloudflare Dynamic DNS Container
       community.docker.docker_container:
         name: "{{ cloudflare_container_name }}"
-        image: joshava/cloudflare-ddns:latest
+        image: timothyjmiller/cloudflare-ddns:latest
         pull: true
+        network_mode: "host"
         volumes:
-          - "{{ cloudflare_data_directory }}/config.yml:/app/config.yaml"
+          - "{{ cloudflare_data_directory }}/config.json:/config.json"
         restart_policy: unless-stopped
         memory: "{{ cloudflare_memory }}"
         recreate: "{{ template_files_result is changed }}"

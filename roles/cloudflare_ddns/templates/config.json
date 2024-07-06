@@ -1,0 +1,20 @@
+{
+    "cloudflare": [
+        {
+            "authentication": {
+                "api_token": "FHu_dE9rC7EkmDRlsh0CNCBggxhycMTdH5cuIO3R"
+            },
+            "zone_id": "f0005a5ac2e43cdb4cacb6c3d4126494",
+            "subdomains": [
+                {
+                    "name": "*",
+                    "proxied": false
+                }
+            ]
+        }
+    ],
+    "a": false,
+    "aaaa": true,
+    "purgeUnknownRecords": false,
+    "ttl": 300
+}
