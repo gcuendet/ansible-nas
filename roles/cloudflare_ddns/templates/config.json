@@ -2,9 +2,9 @@
     "cloudflare": [
         {
             "authentication": {
-                "api_token": "FHu_dE9rC7EkmDRlsh0CNCBggxhycMTdH5cuIO3R"
+                "api_token": "{{ cloudflare_token }}"
             },
-            "zone_id": "f0005a5ac2e43cdb4cacb6c3d4126494",
+            "zone_id": "{{ cloudflare_zone }}",
             "subdomains": [
                 {
                     "name": "*",
