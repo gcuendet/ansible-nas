@@ -53,6 +53,10 @@
     ###
     ### Applications
     ###
+    - role: affine
+      tags:
+        - affine
+
     - role: airsonic
       tags:
         - airsonic

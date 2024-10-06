@@ -6,7 +6,7 @@ affine_available_externally: false
 affine_config_directory: "{{ docker_home }}/affine"
 affine_data_directory: "{{ affine_config_directory }}/config"
 affine_storage_directory: "{{ affine_config_directory }}/affine"
-affine_postgres_directory: "{{ affine_data_directory }}/postgres "
+affine_postgres_directory: "{{ affine_config_directory }}/postgres"
 
 # uid/gid
 affine_user_id: "0"
@@ -21,7 +21,6 @@ affine_memory: 1g
 
 # docker
 affine_container_name: affine
-affine_redis_container_name: affine_redis
 affine_network_name: affine
 
 # redis
