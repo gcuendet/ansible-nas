@@ -20,7 +20,7 @@ affine_hostname: "affine"
 affine_memory: 1g
 
 # docker
-affine_container_name: affine
+affine_container_name: affine_ui
 affine_network_name: affine
 
 # redis
