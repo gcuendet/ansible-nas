@@ -10,6 +10,11 @@
         - "{{ affine_storage_directory }}"
         - "{{ affine_postgres_directory }}"
 
+    # create paperless_ngx network
+    - name: Create AFFiNE network
+      docker_network:
+        name: "{{ affine_network_name }}"
+
     - name: Create AFFiNE redis broker
       community.docker.docker_container:
         name: "{{ affine_redis_container_name }}"
