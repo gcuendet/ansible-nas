@@ -26,6 +26,9 @@ paperless_ngx_export_directory: "{{ paperless_ngx_config_directory }}/export"
 paperless_ngx_media_directory: "{{ paperless_ngx_files_directory }}/media"
 paperless_ngx_consume_directory: "{{ paperless_ngx_files_directory }}/consume"
 
+# settings
+paperless_ngx_filename_format_remove_none: "false"
+
 # network
 paperless_ngx_port: "16922"
 paperless_ngx_hostname: "paperless"
