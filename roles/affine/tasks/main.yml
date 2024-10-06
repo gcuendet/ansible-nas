@@ -1,0 +1,104 @@
+---
+- name: Start AFFiNE
+  block:
+    - name: Create AFFiNE Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ affine_data_directory }}"
+        - "{{ affine_storage_directory }}"
+        - "{{ affine_postgres_directory }}"
+
+    - name: Create AFFiNE redis broker
+      community.docker.docker_container:
+        name: "{{ affine_redis_container_name }}"
+        image: "{{ affine_redis_image_name }}:{{ affine_redis_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        memory: "{{ affine_redis_memory }}"
+        networks:
+          - name: "{{ affine_network_name }}"
+        network_mode: "{{ affine_network_name }}"
+
+    - name: Create AFFiNE postgres Docker Container
+      community.docker.docker_container:
+        name: "{{ affine_db_container_name }}"
+        image: "{{ affine_db_image_name }}:{{ affine_db_image_version }}"
+        pull: true
+        volumes:
+          - "{{ affine_postgres_directory }}:/var/lib/postgresql/data"
+        env:
+          POSTGRES_DB: "{{ affine_postgres_db }}"
+          POSTGRES_USER: "{{ affine_postgres_user }}"
+          POSTGRES_PASSWORD: "{{ affine_postgres_password }}"
+          PGDATA: /var/lib/postgresql/data/pgdata
+        healthcheck:
+          test: ['CMD-SHELL', 'pg_isready -U affine']
+          interval: 10s
+          timeout: 5s
+          retries: 5
+        restart_policy: unless-stopped
+        memory: "{{ affine_postgres_memory }}"
+        networks:
+          - name: "{{ affine_network_name }}"
+        network_mode: "{{ affine_network_name }}"
+
+    - name: AFFiNE
+      community.docker.docker_container:
+        name: "{{ affine_container_name }}"
+        image: ghcr.io/toeverything/affine-graphql:stable
+        command: ['sh', '-c', 'node ./scripts/self-host-predeploy && node ./dist/index.js']
+        pull: true
+        volumes:
+         # custom configurations
+          - "{{ affine_data_directory }}:/root/.affine/config:rw"
+          # blob storage
+          - "{{ affine_storage_directory }}:/root/.affine/storage"
+        ports:
+          - "{{ affine_port }}:3010"
+        env:
+          TZ: "{{ ansible_nas_timezone }}"
+          PUID: "{{ affine_user_id }}"
+          PGID: "{{ affine_group_id }}"
+          NODE_OPTIONS: "--import=./scripts/register.js"
+          AFFINE_CONFIG_PATH: "/root/.affine/config"
+          REDIS_SERVER_HOST: "redis"
+          DATABASE_URL: "postgres://affine:affine@postgres:5432/affine"
+          NODE_ENV: "production"
+          # Telemetry allows us to collect data on how you use the affine. This data will helps us improve the app and provide better features.
+          # Uncomment next line if you wish to quit telemetry.
+          TELEMETRY_ENABLE: "false"
+        restart_policy: unless-stopped
+        memory: "{{ affine_memory }}"
+        networks:
+          - name: "{{ affine_network_name }}"
+        network_mode: "{{ affine_network_name }}"
+        labels:
+          traefik.enable: "{{ affine_available_externally | string }}"
+          traefik.http.routers.affine.rule: "Host(`{{ affine_hostname }}.{{ ansible_nas_domain }}`)"
+          traefik.http.routers.affine.tls.certresolver: "letsencrypt"
+          traefik.http.routers.affine.tls.domains[0].main: "{{ ansible_nas_domain }}"
+          traefik.http.routers.affine.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
+          traefik.http.services.affine.loadbalancer.server.port: "3010"
+          homepage.group: Productivity
+          homepage.name: AFFiNE
+          homepage.href: "http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:{{ affine_port }}"
+          homepage.description: AFFiNE
+  when: affine_enabled is true
+
+- name: Stop AFFiNE
+  block:
+    - name: Stop AFFiNE
+      community.docker.docker_container:
+        name: "{{ affine_container_name }}"
+        state: absent
+    - name: Stop AFFiNE redis
+      community.docker.docker_container:
+        name: "{{ affine_redis_container_name }}"
+        state: absent
+    - name: Stop AFFiNE db
+      community.docker.docker_container:
+        name: "{{ affine_db_container_name }}"
+        state: absent
+  when: affine_enabled is false

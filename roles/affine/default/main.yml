@@ -1,0 +1,42 @@
+---
+affine_enabled: false
+affine_available_externally: false
+
+# directories
+affine_config_directory: "{{ docker_home }}/affine"
+affine_data_directory: "{{ affine_config_directory }}/config"
+affine_storage_directory: "{{ affine_config_directory }}/affine"
+affine_postgres_directory: "{{ affine_data_directory }}/postgres "
+
+# uid/gid
+affine_user_id: "0"
+affine_group_id: "0"
+
+# network
+affine_port: "3010"
+affine_hostname: "affine"
+
+# specs
+affine_memory: 1g
+
+# docker
+affine_container_name: affine
+affine_redis_container_name: affine_redis
+affine_network_name: affine
+
+# redis
+affine_redis_container_name: "affine-redis"
+affine_redis_image_name: "redis"
+affine_redis_image_version: "6.0"
+affine_redis_memory: 1g
+
+
+# postgres
+affine_db_container_name: "affine-db"
+affine_db_image_name: "postgres"
+affine_db_image_version: "13"
+affine_postgres_memory: 1g
+
+affine_postgres_db: "affine"
+affine_postgres_user: "affine"
+affine_postgres_password: "affine"
