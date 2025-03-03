@@ -1,3 +1,6 @@
 [submodule "inventories/ansible-nas-config"]
 	path = inventories/ansible-nas-config
 	url = git@github.com:gcuendet/ansible-nas-config.git
+[submodule "roles/roon-server"]
+	path = roles/roon-server
+	url = https://github.com/elgeeko1/elgeeko1-roon-server-ansible.git

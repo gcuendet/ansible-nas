@@ -21,7 +21,7 @@ affine_memory: 1g
 
 # docker
 affine_container_name: affine_ui
-affine_network_name: affine
+affine_network_name: affine_network
 
 # redis
 affine_redis_container_name: "affine-redis"

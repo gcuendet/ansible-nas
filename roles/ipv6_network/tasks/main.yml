@@ -1,0 +1,10 @@
+---
+- name: Create network
+  block:
+  - name: Create ipv6 enabled network
+    community.docker.docker_network:
+      name: "{{ ipv6_network_name }}"
+      enable_ipv6: true
+      ipam_config:
+        - subnet: "2001:db8::/64"
+  

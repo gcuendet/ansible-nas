@@ -34,6 +34,7 @@
         pull: true
         networks:
         - name: "{{ wikijs_network_name }}"
+        - name: "{{ ipv6_network_name }}"
         network_mode: "{{ wikijs_network_name }}"
         env:
           DB_TYPE: "postgres"
@@ -50,11 +51,11 @@
         memory: "{{ wikijs_memory }}"
         labels:
           traefik.enable: "{{ wikijs_available_externally | string }}"
-          traefik.http.routers.hello_world.rule: "Host(`{{ wikijs_hostname }}.{{ ansible_nas_domain }}`)"
-          traefik.http.routers.hello_world.tls.certresolver: "letsencrypt"
-          traefik.http.routers.hello_world.tls.domains[0].main: "{{ ansible_nas_domain }}"
-          traefik.http.routers.hello_world.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
-          traefik.http.services.hello_world.loadbalancer.server.port: "3000"
+          traefik.http.routers.wikijs.rule: "Host(`{{ wikijs_hostname }}.{{ ansible_nas_domain }}`)"
+          traefik.http.routers.wikijs.tls.certresolver: "letsencrypt"
+          traefik.http.routers.wikijs.tls.domains[0].main: "{{ ansible_nas_domain }}"
+          traefik.http.routers.wikijs.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
+          traefik.http.services.wikijs.loadbalancer.server.port: "3000"
   when: wikijs_enabled is true
 
 - name: Stop Hello World

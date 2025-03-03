@@ -16,6 +16,8 @@
           - "{{ jackett_data_directory }}:/config:rw"
           - "/etc/localtime:/etc/localtime:ro"
           - "{{ jackett_torrents_root }}:/downloads"
+        networks:
+          - name: "{{ ipv6_network_name }}"
         ports:
           - "{{ jackett_port }}:9117"
         env:
@@ -26,6 +28,7 @@
           traefik.enable: "{{ jackett_available_externally | string }}"
           traefik.http.routers.jackett.rule: "Host(`{{ jackett_hostname }}.{{ ansible_nas_domain }}`)"
           traefik.http.routers.jackett.tls.certresolver: "letsencrypt"
+          traefik.http.routers.jackett.middlewares: "authelia@docker"
           traefik.http.routers.jackett.tls.domains[0].main: "{{ ansible_nas_domain }}"
           traefik.http.routers.jackett.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
           traefik.http.services.jackett.loadbalancer.server.port: "9117"

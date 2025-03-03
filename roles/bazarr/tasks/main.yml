@@ -17,6 +17,8 @@
           - "{{ bazarr_tv_directory }}:/tv:rw"
           - "{{ bazarr_movies_directory }}:/movies:rw"
           - "{{ bazarr_data_directory }}:/config:rw"
+        networks:
+          - name: "{{ ipv6_network_name }}"
         ports:
           - "{{ bazarr_port }}:6767"
         env:
@@ -29,6 +31,7 @@
           traefik.enable: "{{ bazarr_available_externally | string }}"
           traefik.http.routers.bazarr.rule: "Host(`{{ bazarr_hostname }}.{{ ansible_nas_domain }}`)"
           traefik.http.routers.bazarr.tls.certresolver: "letsencrypt"
+          traefik.http.routers.bazarr.middlewares: "authelia@docker"
           traefik.http.routers.bazarr.tls.domains[0].main: "{{ ansible_nas_domain }}"
           traefik.http.routers.bazarr.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
           traefik.http.services.bazarr.loadbalancer.server.port: "6767"

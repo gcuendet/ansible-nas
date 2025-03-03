@@ -1,11 +1,6 @@
 ---
 - name: Start Portainer
   block:
-    - name: Check for Deprecated IP Whitelist setting
-      ansible.builtin.fail:
-        msg: "Use portainer_ip_allowlist instead of portainer_ip_whitelist! Read https://traefik.io/blog/announcing-traefik-proxy-v2-11/ for more information."
-      when: portainer_ip_whitelist is defined
-
     - name: Create Portainer Directories
       ansible.builtin.file:
         path: "{{ item }}"
@@ -22,19 +17,20 @@
           - "{{ portainer_data_directory }}:/data:rw"
           - "/var/run/docker.sock:/var/run/docker.sock:ro"
           - "/etc/timezone:/etc/timezone:ro"
+        networks:
+          - name: "{{ ipv6_network_name }}"
         ports:
-          - "{{ portainer_port }}:9443"
+          - "{{ portainer_port }}:9000"
         restart_policy: unless-stopped
         memory: "{{ portainer_memory }}"
         labels:
           traefik.enable: "{{ portainer_available_externally | string }}"
           traefik.http.routers.portainer.rule: "Host(`{{ portainer_hostname }}.{{ ansible_nas_domain }}`)"
           traefik.http.routers.portainer.tls.certresolver: "letsencrypt"
+          traefik.http.routers.portainer.middlewares: "authelia@docker"
           traefik.http.routers.portainer.tls.domains[0].main: "{{ ansible_nas_domain }}"
           traefik.http.routers.portainer.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
-          traefik.http.services.portainer.loadbalancer.server.port: "9443"
-          traefik.http.routers.portainer.middlewares: "portainer-ipallowlist@docker"
-          traefik.http.middlewares.portainer-ipallowlist.ipallowlist.sourcerange: "{{ portainer_ip_allowlist }}"
+          traefik.http.services.portainer.loadbalancer.server.port: "9000"
   when: portainer_enabled is true
 
 - name: Stop Portainer
