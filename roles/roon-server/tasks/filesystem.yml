@@ -1,0 +1,15 @@
+---
+- name: Query existence of {{ roon_server_music_path }}
+  ansible.builtin.stat:
+    path: "{{ roon_server_music_path }}"
+  register: music
+
+- name: Create {{ roon_server_music_path }}
+  ansible.builtin.file:
+    path: "{{ roon_server_music_path }}"
+    state: directory
+    owner: "{{ ansible_nas_user }}"
+    group: "{{ ansible_nas_user }}"
+    mode:  0775
+  become: true
+  when: not music.stat.exists

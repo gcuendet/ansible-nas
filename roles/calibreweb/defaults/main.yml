@@ -9,9 +9,12 @@ calibreweb_group_id: "0"
 # directories
 calibreweb_data_directory: "{{ docker_home }}/calibreweb"
 calibreweb_books_root: "{{ books_root }}"
+calibreweb_books_ingest: "{{ books_root }}/ingest"
 
 # other
-calibreweb_ebook_conversion: "linuxserver/calibre-web:calibre"
+calibreweb_image: "crocodilestick/calibre-web-automated"
+calibreweb_version: "latest"
+calibreweb_ebook_conversion: "lscr.io/linuxserver/mods:universal-calibre-v7.16.0"
 
 # network
 calibreweb_port: "8084"

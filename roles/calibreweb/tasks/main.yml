@@ -12,17 +12,19 @@
     - name: Calibre-web Docker Container
       community.docker.docker_container:
         name: "{{ calibreweb_container_name }}"
-        image: linuxserver/calibre-web:latest
+        image: "{{ calibreweb_image }}:{{ calibreweb_version}}"
         pull: true
         volumes:
           - "{{ calibreweb_data_directory }}/config:/config"
           - "{{ calibreweb_books_root }}:/books"
-          - "{{ calibreweb_data_directory }}/data:/data"
+          - "{{ calibreweb_books_ingest }}:/cwa-book-ingest"
+          - "{{ calibreweb_data_directory }}/library:/calibre-library"
         env:
           TZ: "{{ ansible_nas_timezone }}"
           PUID: "{{ calibreweb_user_id }}"
           PGID: "{{ calibreweb_group_id }}"
           DOCKER_MODS: "{{ calibreweb_ebook_conversion }}"
+          CALIBRE_PORT: "8083"
         ports:
           - "{{ calibreweb_port }}:8083"
         restart_policy: unless-stopped

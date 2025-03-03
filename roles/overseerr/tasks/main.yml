@@ -16,6 +16,8 @@
         pull: true
         volumes:
           - "{{ overseerr_data_directory }}/config:/app/config:rw"
+        networks:
+          - name: "{{ ipv6_network_name }}"
         ports:
           - "{{ overseerr_webui_port }}:5055"
         env:
@@ -28,6 +30,7 @@
           traefik.enable: "{{ overseerr_available_externally | string }}"
           traefik.http.routers.overseerr.rule: "Host(`{{ overseerr_hostname }}.{{ ansible_nas_domain }}`)"
           traefik.http.routers.overseerr.tls.certresolver: "letsencrypt"
+          traefik.http.routers.overseerr.middlewares: "authelia@docker"
           traefik.http.routers.overseerr.tls.domains[0].main: "{{ ansible_nas_domain }}"
           traefik.http.routers.overseerr.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
           traefik.http.services.overseerr.loadbalancer.server.port: "5055"

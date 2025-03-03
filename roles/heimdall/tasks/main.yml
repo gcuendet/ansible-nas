@@ -17,6 +17,8 @@
           - "{{ heimdall_data_directory }}:/config:rw"
         env:
           TZ: "{{ ansible_nas_timezone }}"
+        networks:
+          - name: "{{ ipv6_network_name }}"
         ports:
           - "{{ heimdall_port_http }}:80"
         restart_policy: unless-stopped
@@ -25,6 +27,7 @@
           traefik.enable: "{{ heimdall_available_externally | string }}"
           traefik.http.routers.heimdall.rule: "Host(`{{ heimdall_hostname }}.{{ ansible_nas_domain }}`)"
           traefik.http.routers.heimdall.tls.certresolver: "letsencrypt"
+          traefik.http.routers.heimdall.middlewares: "authelia@docker"
           traefik.http.routers.heimdall.tls.domains[0].main: "{{ ansible_nas_domain }}"
           traefik.http.routers.heimdall.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
           traefik.http.services.heimdall.loadbalancer.server.port: "80"

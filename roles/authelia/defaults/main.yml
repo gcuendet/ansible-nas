@@ -1,0 +1,23 @@
+---
+authelia_enabled: false
+authelia_available_externally: false
+
+# directories
+authelia_data_directory: "{{ docker_home }}/authelia"
+
+# network
+authelia_network_name: "authelia_network"
+authelia_port: "9092"
+authelia_hostname: "auth"
+
+# specs
+authelia_memory: 1g
+
+# docker
+authelia_container_name: "authelia"
+authelia_redis_container_name: "authelia_redis"
+authelia_image: "authelia/authelia"
+authelia_tag: "latest"
+
+authelia_user_id: "0"
+authelia_group_id: "0"

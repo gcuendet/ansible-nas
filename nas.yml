@@ -49,6 +49,9 @@
       tags:
         - logging
 
+    - role: ipv6_network
+      tags:
+        - ipv6_network
 
     ###
     ### Applications
@@ -60,6 +63,10 @@
     - role: airsonic
       tags:
         - airsonic
+
+    - role: authelia
+      tags:
+        - authelia
 
     - role: bazarr
       tags:
@@ -348,6 +355,10 @@
     - role: romm
       tags:
         - romm
+
+    - role: roon-server
+      tags:
+        - roon
 
     - role: route53_ddns
       tags:

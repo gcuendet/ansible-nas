@@ -1,0 +1,69 @@
+---
+- name: Docker pull latest elgeeko/roon-server
+  community.general.docker_image:
+    name: {{ roon_docker_image }}:{{ roon_docker_tag }}
+    source: pull
+    force_source: true
+
+- name: Configure Docker macvlan network
+  community.general.docker_network:
+    name: "{{ roon_network_macvlan.name }}"
+    state: "{{ (roon_network_mode == 'macvlan') | ternary('present', 'absent') }}"
+    driver: macvlan
+    driver_options:
+      macvlan_mode: private
+      parent: "{{ roon_network_macvlan.interface }}"
+    ipam_config:
+      - subnet:  "{{ roon_network_macvlan.subnet }}"
+        gateway: "{{ roon_network_macvlan.gateway }}"
+
+- name: Create docker volume roon-server-data
+  community.docker.docker_volume:
+    name: roon-server-data
+
+- name: Create docker volume roon-server-cache
+  community.docker.docker_volume:
+    name: roon-server-cache
+
+- name: Get group ID for audio
+  ansible.builtin.getent:
+    database: group
+    key: audio
+
+- name: Start roon-server docker container
+  community.general.docker_container:
+    name: roon-server
+    image: {{ roon_docker_image }}:{{ roon_docker_tag }}
+    state: started
+    comparisons:
+      image: strict
+      networks: strict
+      env: strict
+    restart_policy: unless-stopped
+    cleanup: true
+    keep_volumes: false
+    hostname: "{{ roon_hostname }}"
+    privileged: "{{ roon_container_privileged }}"
+    user: "{{ roon_container_user }}"
+    groups:
+      - "{{ getent_group.audio[1] }}"
+    volumes:
+      - roon-server-data:/opt/RoonServer
+      - roon-server-cache:/var/roon
+      - "{{ roon_server_music_path }}:/music:ro"
+      - /run/udev:/run/udev:ro # allow querying USB information
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    devices:
+      - /dev/bus/usb
+      - /dev/snd
+    capabilities:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+    security_opts:
+      - apparmor:unconfined
+    networks: "{{ (roon_network_mode == 'macvlan') | ternary( \
+        [{'name': roon_network_macvlan.name, 'ipv4_address': roon_network_macvlan.ipv4_address}], \
+        [{'name': roon_network_mode }]  ) }}"
+    ports: "{{ (roon_network_mode == 'host') | ternary([], roon_published_ports) }}"
+    log_driver: "local"  # default doesn't log rotate

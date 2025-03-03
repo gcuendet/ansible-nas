@@ -15,6 +15,8 @@
         pull: true
         volumes:
           - "{{ prowlarr_data_directory }}:/config:rw"
+        networks:
+          - name: "{{ ipv6_network_name }}"
         ports:
           - "{{ prowlarr_port }}:9696"
         env:
@@ -27,6 +29,7 @@
           traefik.enable: "{{ prowlarr_available_externally | string }}"
           traefik.http.routers.prowlarr.rule: "Host(`{{ prowlarr_hostname }}.{{ ansible_nas_domain }}`)"
           traefik.http.routers.prowlarr.tls.certresolver: "letsencrypt"
+          traefik.http.routers.prowlarr.middlewares: "authelia@docker"
           traefik.http.routers.prowlarr.tls.domains[0].main: "{{ ansible_nas_domain }}"
           traefik.http.routers.prowlarr.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
           traefik.http.services.prowlarr.loadbalancer.server.port: "9696"
