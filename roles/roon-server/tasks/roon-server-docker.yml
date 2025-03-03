@@ -1,7 +1,7 @@
 ---
 - name: Docker pull latest elgeeko/roon-server
   community.general.docker_image:
-    name: {{ roon_docker_image }}:{{ roon_docker_tag }}
+    name: "{{ roon_docker_image }}:{{ roon_docker_tag }}"
     source: pull
     force_source: true
 
@@ -33,7 +33,7 @@
 - name: Start roon-server docker container
   community.general.docker_container:
     name: roon-server
-    image: {{ roon_docker_image }}:{{ roon_docker_tag }}
+    image: "{{ roon_docker_image }}:{{ roon_docker_tag }}"
     state: started
     comparisons:
       image: strict

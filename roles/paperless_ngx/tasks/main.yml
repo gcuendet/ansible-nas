@@ -102,7 +102,7 @@
           PAPERLESS_TIKA_GOTENBERG_ENDPOINT: "http://{{ paperless_ngx_container_name_gotenberg }}:3000"
           PAPERLESS_TIKA_ENDPOINT: "http://{{ paperless_ngx_container_name_tika }}:9998"
           PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
-          PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect": {"APPS": [{"provider_id": "authelia","name": "Authelia SSO","client_id": "{{ paperless_ngx_hostname }}","secret": "{{ paperless_auth_secret }}","settings": { "server_url": "https://{{ authelia_hostname }}.{{ ansible_nas_domain }}/.well-known/openid-configuration"}}]}}'
+          PAPERLESS_SOCIALACCOUNT_PROVIDERS: "{{ paperless_socialaccount_provider | string }}"
           PAPERLESS_DISABLE_REGULAR_LOGIN: "true"
           PAPERLESS_REDIRECT_LOGIN_TO_SSO: "true"
           PAPERLESS_OCR_LANGUAGES: "{{ paperless_ngx_languages }}"
