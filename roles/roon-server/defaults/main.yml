@@ -1,5 +1,5 @@
-roon_docker_image: elgeeko/roon-server
-roon_docker_tag: latest
+roon_docker_image: hassejohansen/roon
+roon_docker_tag: 2.0.1641
 
 roon_hostname: "{{ inventory_hostname }}"
 roon_server_music_path: "{{ music_root }}" # path on the host to store music
