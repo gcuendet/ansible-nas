@@ -1,0 +1,21 @@
+---
+nod_enabled: false
+
+# Nod (n8n Labs personal agent), built from source at this tag
+nod_repository: "https://github.com/n8n-io/nod.git"
+nod_version: "nod-v0.9.1"
+
+# Networking: published on loopback only, reached through Traefik (tailnet/LAN allow list)
+nod_hostname: "nod"
+nod_port: 4310
+nod_public_url: "https://{{ nod_hostname }}.{{ ansible_nas_domain }}"
+
+# Directories. secrets.env (auth token, vault key, DB password) is generated once here:
+# back it up together with the Docker volumes, the vault key cannot be recovered.
+nod_directory: "{{ docker_home }}/nod"
+nod_traefik_dynamic_directory: "{{ traefik_data_directory | default(docker_home ~ '/traefik') }}/dynamic"
+
+# specs
+nod_server_memory: 2g
+nod_browser_memory: 3g
+nod_workspace_memory: 2g

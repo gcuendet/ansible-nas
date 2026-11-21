@@ -1,0 +1,78 @@
+---
+- name: Start Nod
+  block:
+    - name: Create Nod directory
+      ansible.builtin.file:
+        path: "{{ nod_directory }}"
+        state: directory
+        mode: "0750"
+
+    - name: Check out Nod source
+      ansible.builtin.git:
+        repo: "{{ nod_repository }}"
+        dest: "{{ nod_directory }}/src"
+        version: "{{ nod_version }}"
+        depth: 1
+
+    - name: Generate Nod secrets (first install only)
+      ansible.builtin.shell: |
+        umask 077
+        {
+          printf 'NOD_AUTH_TOKEN=%s\n' "$(openssl rand -hex 32)"
+          printf 'NOD_VAULT_KEY=%s\n' "$(openssl rand -base64 32)"
+          printf 'NOD_POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
+        } > secrets.env
+      args:
+        chdir: "{{ nod_directory }}"
+        creates: "{{ nod_directory }}/secrets.env"
+      no_log: true
+
+    - name: Template Nod settings
+      ansible.builtin.template:
+        src: settings.env
+        dest: "{{ nod_directory }}/settings.env"
+        mode: "0640"
+
+    - name: Build and start Nod
+      community.docker.docker_compose_v2:
+        project_src: "{{ nod_directory }}/src/deployment/self-host"
+        project_name: nod
+        env_files:
+          - "{{ nod_directory }}/settings.env"
+          - "{{ nod_directory }}/secrets.env"
+        build: policy
+        # Let Compose decide: locally built images are not pulled from Docker Hub
+        pull: policy
+        state: present
+        wait: true
+        wait_timeout: 600
+
+    - name: Route nod hostname through Traefik
+      ansible.builtin.template:
+        src: traefik-nod.toml
+        dest: "{{ nod_traefik_dynamic_directory }}/nod.toml"
+        mode: "0644"
+  when: nod_enabled is true
+
+- name: Stop Nod
+  block:
+    - name: Remove Nod Traefik route
+      ansible.builtin.file:
+        path: "{{ nod_traefik_dynamic_directory }}/nod.toml"
+        state: absent
+
+    - name: Check for Nod source
+      ansible.builtin.stat:
+        path: "{{ nod_directory }}/src/deployment/self-host/compose.yaml"
+      register: nod_compose_file
+
+    - name: Stop Nod (volumes are kept)
+      community.docker.docker_compose_v2:
+        project_src: "{{ nod_directory }}/src/deployment/self-host"
+        project_name: nod
+        env_files:
+          - "{{ nod_directory }}/settings.env"
+          - "{{ nod_directory }}/secrets.env"
+        state: absent
+      when: nod_compose_file.stat.exists
+  when: nod_enabled is false

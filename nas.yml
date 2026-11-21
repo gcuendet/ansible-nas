@@ -296,6 +296,10 @@
       tags:
         - nzbget
 
+    - role: nod
+      tags:
+        - nod
+
     - role: octoprint
       tags:
         - octoprint

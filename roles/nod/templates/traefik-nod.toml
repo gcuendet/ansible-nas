@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+# The websecure entrypoint already applies the tailnet-only allow list.
+[http.routers.nod]
+  rule = "Host(`{{ nod_hostname }}.{{ ansible_nas_domain }}`)"
+  entryPoints = ["websecure"]
+  service = "nod"
+  [http.routers.nod.tls]
+    certResolver = "letsencrypt"
+
+[http.services.nod.loadBalancer]
+  [[http.services.nod.loadBalancer.servers]]
+    url = "http://127.0.0.1:{{ nod_port }}"
