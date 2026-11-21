@@ -8,6 +8,10 @@
   [entryPoints.websecure]
     address = ":{{ traefik_port_https }}"
 
+    # Every HTTPS router is only reachable from the tailnet, the LAN and Docker networks
+    [entryPoints.websecure.http]
+      middlewares = ["tailnet-only@file"]
+
       [entryPoints.websecure.http.tls]
         certResolver = "letsencrypt"
 
@@ -24,6 +28,10 @@
   providersThrottleDuration = "2s"
   [providers.docker]
     exposedbydefault = false
+
+  [providers.file]
+    directory = "/etc/traefik/dynamic"
+    watch = true
 
 [api]
   insecure = true

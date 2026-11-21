@@ -1,0 +1,3 @@
+# {{ ansible_managed }}
+[http.middlewares.tailnet-only.ipAllowList]
+  sourceRange = {{ (traefik_trusted_networks + traefik_trusted_networks_extra) | to_json }}

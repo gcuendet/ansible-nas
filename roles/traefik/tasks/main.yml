@@ -8,12 +8,19 @@
       with_items:
         - "{{ traefik_data_directory }}"
         - "{{ traefik_data_directory }}/letsencrypt"
+        - "{{ traefik_data_directory }}/dynamic"
 
     - name: Template Traefik config.toml
       ansible.builtin.template:
         src: traefik.toml
         dest: "{{ traefik_data_directory }}/traefik.toml"
       register: template_config
+
+    - name: Template Traefik dynamic config
+      ansible.builtin.template:
+        src: dynamic/tailnet-only.toml
+        dest: "{{ traefik_data_directory }}/dynamic/tailnet-only.toml"
+        mode: "0644"
 
     - name: Traefik Docker Container
       community.docker.docker_container:
@@ -24,6 +31,7 @@
         volumes:
           - "{{ traefik_data_directory }}/traefik.toml:/etc/traefik/traefik.toml:ro"
           - "{{ traefik_data_directory }}/letsencrypt:/letsencrypt:rw"
+          - "{{ traefik_data_directory }}/dynamic:/etc/traefik/dynamic:ro"
           - "/var/run/docker.sock:/var/run/docker.sock:ro"
         env: "{{ traefik_environment_variables }}"
         restart_policy: unless-stopped
