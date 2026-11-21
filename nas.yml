@@ -324,6 +324,10 @@
       tags:
         - piwigo
 
+    - role: pihole
+      tags:
+        - pihole
+
     - role: plex
       tags:
         - plex

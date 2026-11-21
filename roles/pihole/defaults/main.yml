@@ -1,0 +1,31 @@
+---
+pihole_enabled: false
+
+# Networking
+pihole_available_externally: false
+pihole_hostname: "pihole"
+# DNS is only published on this address (systemd-resolved already owns 127.0.0.53:53)
+pihole_dns_bind_address: "{{ ansible_default_ipv4.address }}"
+pihole_web_port: 8053
+
+# Directories
+pihole_data_directory: "{{ docker_home }}/pihole"
+
+# Security
+pihole_web_password: "change_me"
+
+# DNS
+pihole_upstream_dns:
+  - "1.1.1.1"
+  - "9.9.9.9"
+# Local records: each name becomes <name>.{{ ansible_nas_domain }} -> pihole_local_dns_target
+pihole_local_dns_target: "{{ pihole_dns_bind_address }}"
+pihole_local_dns_hostnames: []
+
+# docker
+pihole_container_name: "pihole"
+pihole_image_name: "pihole/pihole"
+pihole_image_version: "2026.11.0"
+
+# specs
+pihole_memory: 512m

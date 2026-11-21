@@ -1,0 +1,46 @@
+---
+- name: Start Pi-hole
+  block:
+    - name: Create Pi-hole Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ pihole_data_directory }}"
+
+    - name: Create Pi-hole Docker Container
+      community.docker.docker_container:
+        name: "{{ pihole_container_name }}"
+        image: "{{ pihole_image_name }}:{{ pihole_image_version }}"
+        pull: true
+        ports:
+          - "{{ pihole_dns_bind_address }}:53:53/tcp"
+          - "{{ pihole_dns_bind_address }}:53:53/udp"
+          - "{{ pihole_web_port }}:80"
+        volumes:
+          - "{{ pihole_data_directory }}:/etc/pihole:rw"
+        env:
+          TZ: "{{ ansible_nas_timezone }}"
+          FTLCONF_webserver_api_password: "{{ pihole_web_password }}"
+          FTLCONF_dns_upstreams: "{{ pihole_upstream_dns | join(';') }}"
+          # Answer queries from the tailnet (100.64.0.0/10) too, not only from local subnets
+          FTLCONF_dns_listeningMode: "ALL"
+          FTLCONF_dns_hosts: "{{ pihole_local_dns_hostnames | map('regex_replace', '^(.*)$', pihole_local_dns_target ~ ' \\1.' ~ ansible_nas_domain) | join(';') }}"
+        restart_policy: unless-stopped
+        memory: "{{ pihole_memory }}"
+        labels:
+          traefik.enable: "{{ pihole_available_externally | string }}"
+          traefik.http.routers.pihole.rule: "Host(`{{ pihole_hostname }}.{{ ansible_nas_domain }}`)"
+          traefik.http.routers.pihole.tls.certresolver: "letsencrypt"
+          traefik.http.routers.pihole.tls.domains[0].main: "{{ ansible_nas_domain }}"
+          traefik.http.routers.pihole.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
+          traefik.http.services.pihole.loadbalancer.server.port: "80"
+  when: pihole_enabled is true
+
+- name: Stop Pi-hole
+  block:
+    - name: Stop Pi-hole
+      community.docker.docker_container:
+        name: "{{ pihole_container_name }}"
+        state: absent
+  when: pihole_enabled is false
