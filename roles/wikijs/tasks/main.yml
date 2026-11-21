@@ -15,8 +15,9 @@
     - name: Wiki.js postgresql Docker Container
       community.docker.docker_container:
         name: "{{ wikijs_postgresql_container_name }}"
-        image: postgres:latest
+        image: postgres:17
         pull: true
+        restart_policy: unless-stopped
         volumes:
           - "{{ wikijs_data_directory }}/postgresql/data_16:/var/lib/postgresql/data:rw"
         env:
