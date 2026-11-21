@@ -1,0 +1,16 @@
+---
+tailscale_enabled: false
+
+# Name of this machine in the tailnet
+tailscale_hostname: "{{ ansible_nas_hostname }}"
+
+# LAN subnets reachable through this machine (must be approved in the Tailscale admin console)
+tailscale_advertise_routes:
+  - "192.168.1.0/24"
+
+# Keep the host resolver: Docker containers inherit it
+tailscale_accept_dns: false
+
+# Optional: pre-auth key for unattended login. Leave empty to log in interactively once with
+# `sudo tailscale up` (the role then only keeps the settings in sync).
+tailscale_authkey: ""
