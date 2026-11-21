@@ -19,3 +19,11 @@ Session.vim
 
 # IntelliJ
 /.idea/
+
+# Local backups and key material: never commit
+*.bak
+*.bak-*
+*.pem
+*_rsa
+*_rsa.pub
+*.sql
