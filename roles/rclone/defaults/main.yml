@@ -1,0 +1,30 @@
+---
+rclone_enabled: false
+
+# Host directories (created on the NAS)
+rclone_config_directory: "{{ docker_home }}/rclone"
+rclone_logs_directory: "{{ docker_home }}/rclone_logs"
+
+# Folder to back up, mounted read-only into the sync container.
+# Default: the Paperless-ngx archived documents.
+rclone_source_directory: "{{ paperless_ngx_media_directory }}/documents/archive"
+
+# kDrive WebDAV remote. Set the secret values (user/pass/dest) in your inventory.
+rclone_remote_name: "kdrive"
+rclone_kdrive_url: "https://connect.kdrive.infomaniak.com"
+rclone_kdrive_vendor: "other"
+rclone_kdrive_user: ""
+rclone_kdrive_pass: ""          # plaintext application password; obscured into rclone.conf
+rclone_kdrive_dest: ""          # e.g. "neonDrive/Common documents/menage/paperless"
+
+# Sync schedule (cron special_time: hourly/daily/weekly/...)
+rclone_cron_special_time: "hourly"
+
+# Rewrite rclone.conf even if it already exists (set true after changing credentials)
+rclone_force_reconfigure: false
+
+# Docker
+rclone_image: "rclone/rclone"
+rclone_tag: "latest"
+rclone_container_name: "rclone"   # legacy Web GUI daemon, removed by this role
+rclone_memory: "512m"

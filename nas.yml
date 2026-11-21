@@ -352,6 +352,10 @@
       tags:
         - radarr
 
+    - role: rclone
+      tags:
+        - rclone
+
     - role: romm
       tags:
         - romm

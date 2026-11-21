@@ -1,0 +1,80 @@
+---
+- name: Configure rclone kDrive backup
+  block:
+    - name: Create rclone directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0750"
+      loop:
+        - "{{ rclone_config_directory }}"
+        - "{{ rclone_logs_directory }}"
+
+    - name: Remove legacy rclone Web GUI daemon container
+      community.docker.docker_container:
+        name: "{{ rclone_container_name }}"
+        state: absent
+
+    - name: Check for existing rclone configuration
+      ansible.builtin.stat:
+        path: "{{ rclone_config_directory }}/rclone.conf"
+      register: rclone_conf
+
+    - name: Obscure kDrive password
+      ansible.builtin.command:
+        argv:
+          - docker
+          - run
+          - --rm
+          - "{{ rclone_image }}:{{ rclone_tag }}"
+          - obscure
+          - "{{ rclone_kdrive_pass }}"
+      register: rclone_obscured
+      changed_when: false
+      no_log: true
+      when: not rclone_conf.stat.exists or rclone_force_reconfigure
+
+    - name: Write rclone configuration
+      ansible.builtin.copy:
+        dest: "{{ rclone_config_directory }}/rclone.conf"
+        owner: root
+        group: root
+        mode: "0600"
+        content: |
+          [{{ rclone_remote_name }}]
+          type = webdav
+          url = {{ rclone_kdrive_url }}
+          vendor = {{ rclone_kdrive_vendor }}
+          user = {{ rclone_kdrive_user }}
+          pass = {{ rclone_obscured.stdout }}
+      no_log: true
+      when: not rclone_conf.stat.exists or rclone_force_reconfigure
+
+    - name: Schedule recurring rclone sync (paperless archive -> kDrive)
+      ansible.builtin.cron:
+        name: "rclone {{ rclone_remote_name }} paperless archive backup"
+        special_time: "{{ rclone_cron_special_time }}"
+        job: >-
+          /usr/bin/docker run --rm --memory {{ rclone_memory }}
+          -v {{ rclone_config_directory }}:/config
+          -v {{ rclone_logs_directory }}:/logs
+          -v {{ rclone_source_directory }}:/data:ro
+          {{ rclone_image }}:{{ rclone_tag }}
+          --config /config/rclone.conf
+          sync /data '{{ rclone_remote_name }}:{{ rclone_kdrive_dest }}'
+          --log-file /logs/rclone.log --log-level INFO --stats-one-line
+          >> {{ rclone_logs_directory }}/cron.log 2>&1
+  when: rclone_enabled
+
+- name: Remove rclone kDrive backup
+  block:
+    - name: Remove rclone sync cron job
+      ansible.builtin.cron:
+        name: "rclone {{ rclone_remote_name }} paperless archive backup"
+        state: absent
+
+    - name: Remove rclone daemon container
+      community.docker.docker_container:
+        name: "{{ rclone_container_name }}"
+        state: absent
+  when: not rclone_enabled
