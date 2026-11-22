@@ -1,0 +1,57 @@
+---
+- name: Start Seerr
+  block:
+    - name: Create Seerr Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ seerr_user_id }}"
+        group: "{{ seerr_group_id }}"
+        mode: "0750"
+      with_items:
+        - "{{ seerr_data_directory }}/config"
+
+    - name: Create Seerr Docker Container
+      community.docker.docker_container:
+        name: "{{ seerr_container_name }}"
+        image: "{{ seerr_image_name }}:{{ seerr_image_version }}"
+        pull: true
+        init: true
+        user: "{{ seerr_user_id }}:{{ seerr_group_id }}"
+        volumes:
+          - "{{ seerr_data_directory }}/config:/app/config:rw"
+        networks:
+          - name: "{{ ipv6_network_name }}"
+        ports:
+          - "{{ seerr_port }}:5055"
+        env:
+          TZ: "{{ ansible_nas_timezone }}"
+          LOG_LEVEL: "{{ seerr_log_level }}"
+        healthcheck:
+          test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1"]
+          start_period: 20s
+          timeout: 3s
+          interval: 15s
+          retries: 3
+        security_opts:
+          - no-new-privileges:true
+        cap_drop:
+          - ALL
+        restart_policy: unless-stopped
+        memory: "{{ seerr_memory }}"
+        labels:
+          traefik.enable: "{{ seerr_available_externally | string }}"
+          traefik.http.routers.seerr.rule: "Host(`{{ seerr_hostname }}.{{ ansible_nas_domain }}`)"
+          traefik.http.routers.seerr.tls.certresolver: "letsencrypt"
+          traefik.http.routers.seerr.tls.domains[0].main: "{{ ansible_nas_domain }}"
+          traefik.http.routers.seerr.tls.domains[0].sans: "*.{{ ansible_nas_domain }}"
+          traefik.http.services.seerr.loadbalancer.server.port: "5055"
+  when: seerr_enabled is true
+
+- name: Stop Seerr
+  block:
+    - name: Stop Seerr
+      community.docker.docker_container:
+        name: "{{ seerr_container_name }}"
+        state: absent
+  when: seerr_enabled is false
